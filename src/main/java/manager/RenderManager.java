@@ -1,9 +1,10 @@
 package manager;
 
 import common.Texture;
-import entity.Character;
 import entity.Entity;
+import entity.Character;
 import factory.MapFactory;
+import network.Client;
 import network.pack.Textures;
 import tool.MyTool;
 
@@ -11,8 +12,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -22,6 +25,8 @@ import javax.swing.*;
  * 渲染管理器
  * 渲染游戏画面(采用Swing)
  * 该类继承自JFrame，重写了paint(Graphics)方法
+ *
+ * 渲染管理器包含了菜单的逻辑
  */
 public class RenderManager extends JFrame {
     /**
@@ -48,6 +53,11 @@ public class RenderManager extends JFrame {
      * 背景纹理缓存
      */
     private BufferedImage backgroundAfterCutImage;
+
+    /**
+     * 线性减淡图层(Bloom)
+     */
+    private BufferedImage linearDodgePicture;
 
     /**
      * 初始窗口大小
@@ -111,6 +121,11 @@ public class RenderManager extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         menuState = MAIN_MENU;
+
+        try {
+            background = new Texture("./pics/background.png", 1080, 1920, 540, 960);
+            linearDodgePicture = ImageIO.read(new File("./pics/bloom.png"));
+        } catch (IOException e) {e.getStackTrace();}
 
         setVisible(true);
     }
@@ -192,9 +207,7 @@ public class RenderManager extends JFrame {
             JTextField password = new JTextField();
 
             // function
-            //registerButton.setText("");
-            //registerButton.setIcon(new ImageIcon("./pics/pic100.png"));
-            MyTool.setButtonTransparent(registerButton, true);
+            // MyTool.setButtonTransparent(registerButton, true);
 
             // position
             registerButton.setBounds(100, 100, 200, 50);
@@ -217,7 +230,29 @@ public class RenderManager extends JFrame {
             // repaint
             repaint();
         } else if(menuState == LOBBY_MENU) {
+            if(isRendered) {
+                // TODO 发送请求
+                // TODO 接收大厅信息
+                // TODO 显示
+            }
+            isRendered = true;
 
+            // instantiate
+            JLabel createRoom = new JLabel("Create Room");
+            JTextField roomName = new JTextField();
+
+            // function
+
+            // position
+            createRoom.setBounds(100, 100, 200, 50);
+            roomName.setBounds(100, 400, 200, 50);
+
+            // add
+            add(createRoom);
+            add(roomName);
+
+            // repaint
+            repaint();
         }
     }
 
@@ -274,13 +309,6 @@ public class RenderManager extends JFrame {
         else if(getWidth() <= 1584 || getHeight() <= 864) scale = 0.8f;
         else scale = 1f;
 
-        if(background == null) {
-            try {
-                background = new Texture("./pics/background.png", 1080, 1920, 540, 960);
-            } catch (IOException e) {
-                e.getStackTrace();
-            }
-        }
         if(background.setScale(scale) || windowSizeChanged || backgroundAfterCutImage == null)
             backgroundAfterCutImage = background.getCutImage(background.getLx() / 2 - getHeight() / 2, background.getLy() / 2 - getWidth() / 2, getHeight(), getWidth());
         g.drawImage(backgroundAfterCutImage, 0, 0, null);
@@ -297,6 +325,10 @@ public class RenderManager extends JFrame {
             texture.setScale(scale);
             g.drawImage(texture.getImage(), (int)(entity.getHitbox().getY()*scale) - texture.getDy() + getWidth() / 2, (int)(entity.getHitbox().getX()*scale) - texture.getDx() + getHeight() / 2, null);
         }
+
+        //if(linearDodgePicture != null)
+        //    offScreenImage = MyTool.linearDodge(((BufferedImage)offScreenImage), linearDodgePicture);
+
         graphics.drawImage(offScreenImage, 0, 0, null);
     }
 

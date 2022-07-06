@@ -147,4 +147,26 @@ public class MyTool {
         return C;
     }
 
+    /**
+     * 线性渐淡
+     * @param A 图像A
+     * @param B 图像B
+     * @return C = A + B
+     */
+    public static BufferedImage linearDodge(BufferedImage A, BufferedImage B) {
+        int width = A.getWidth();
+        int height = A.getHeight();
+        for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height; j++) {
+                Color aC = new Color(A.getRGB(i, j));
+                Color bC = new Color(B.getRGB(i, j));
+                int r = Math.min(255, aC.getRed() + bC.getRed());
+                int g = Math.min(255, aC.getGreen() + bC.getGreen());
+                int b = Math.min(255, aC.getBlue() + bC.getBlue());
+                A.setRGB(r, g, b);
+            }
+        }
+        return A;
+    }
+
 }

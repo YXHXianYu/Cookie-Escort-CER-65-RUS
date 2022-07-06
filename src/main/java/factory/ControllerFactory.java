@@ -1,8 +1,8 @@
 package factory;
 
 import network.pack.Control;
-import entity.Character;
 import entity.Controller;
+import entity.Character;
 import manager.RenderManager;
 import tool.MyTool;
 

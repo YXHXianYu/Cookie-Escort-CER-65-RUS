@@ -2,8 +2,8 @@ package factory;
 
 import common.MoveAnimation;
 import common.Texture;
-import entity.Character;
 import entity.Controller;
+import entity.Character;
 import manager.GameManager;
 import physics.Hitbox;
 
