@@ -2,6 +2,7 @@ package manager;
 
 import entity.*;
 import entity.Character;
+import network.pack.EntityMessage;
 import physics.Hitbox;
 
 import java.util.ArrayList;
@@ -161,6 +162,10 @@ public class EntityManager {
             }
         }
         entityList = newEntityList;
+    }
+
+    public void playWithPack(EntityMessage entityMessage) {
+
     }
 
     /**

@@ -1,4 +1,4 @@
-package network.pack;
+package network.deprecatedPack;
 
 /**
  * @author YXH_XianYu
@@ -6,7 +6,7 @@ package network.pack;
  *
  * 加入房间
  */
-public class JoinRoom {
+public class JoinRoom implements java.io.Serializable {
     /**
      * 房间名
      */

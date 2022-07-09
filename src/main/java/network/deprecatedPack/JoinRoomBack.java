@@ -1,10 +1,12 @@
-package network.pack;
+package network.deprecatedPack;
+
+import network.pack.Message;
 
 /**
  * @author YXH_XianYu
  * Created On 2022-07-06
  */
-public class JoinRoomBack extends Message {
+public class JoinRoomBack extends Message implements java.io.Serializable {
     /**
      * 0: 成功
      */

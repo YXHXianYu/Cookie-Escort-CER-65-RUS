@@ -1,5 +1,9 @@
 package manager;
 
+import factory.MapFactory;
+import network.Server;
+import network.pack.Textures;
+
 import javax.sound.sampled.AudioSystem;
 
 /**
@@ -85,7 +89,7 @@ public class GameManager {
      */
     private void init() {
         // render
-        RenderManager.getInstance().setMenuState(1);
+        RenderManager.getInstance().init();
         // audio
         try {
             AudioSystem.getClip();
@@ -114,6 +118,56 @@ public class GameManager {
 
             // 调用其他管理器
             RenderManager.getInstance().renderMenu();
+
+            // 帧数限制
+            long time = System.currentTimeMillis();
+            if(fixedFps) {
+                lastTime += 1000 / fps;
+                long delta = lastTime - time;
+                if(delta <= delta_bias) {
+                    if(delta < delta_bias) {
+                        // System.out.println("游戏帧数过低");
+                        // 发现有时候因为窗口拖动会产生跳帧，无伤大雅
+                    }
+                } else {
+                    try {
+                        Thread.sleep(delta - delta_bias);
+                    } catch (InterruptedException e) {
+                        System.out.println(e);
+                    }
+                }
+            }
+            cnt++;
+            if(System.currentTimeMillis() - lastSecondTime >= 1000) {
+                System.out.println("fps = " + cnt);
+                lastSecondTime = System.currentTimeMillis();
+                cnt = 0;
+            }
+        }
+    }
+
+    /**
+     * 服务器版 - 游戏主循环
+     */
+    public void playServer() {
+
+        MapFactory.setMapIntoEntityManager(MapFactory.DEFAULT_MAP);
+
+        long lastTime = -1;
+        long lastSecondTime = -1;
+        int cnt = 0;
+        while(true) {
+            if(lastTime == -1) {
+                lastTime = System.currentTimeMillis();
+                lastSecondTime = System.currentTimeMillis();
+            }
+            // 时间戳+1
+            timeStamp++;
+
+            // 调用其他管理器
+            EntityManager.getInstance().play();
+            Textures textures = RenderManager.getInstance().getCurrentTexturePack();
+            Server.getInstance().broadcastTextures(textures);
 
             // 帧数限制
             long time = System.currentTimeMillis();

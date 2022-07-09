@@ -1,4 +1,4 @@
-package network.pack;
+package network.deprecatedPack;
 
 import network.server.Room;
 
@@ -6,7 +6,7 @@ import network.server.Room;
  * @author YXH_XianYu
  * Created On 2022-07-06
  */
-public class CreateRoom {
+public class CreateRoom implements java.io.Serializable {
     /**
      * 房间
      */

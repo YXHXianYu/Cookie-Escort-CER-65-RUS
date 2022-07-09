@@ -6,7 +6,7 @@ package network.pack;
  *
  * 回报
  */
-public abstract class Message {
+public abstract class Message implements java.io.Serializable {
     /**
      * 信息内容
      */

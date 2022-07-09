@@ -1,4 +1,6 @@
-package network.pack;
+package network.deprecatedPack;
+
+import network.pack.Message;
 
 /**
  * @author YXH_XianYu
@@ -6,7 +8,7 @@ package network.pack;
  *
  * 登录回报
  */
-public class LoginBack extends Message {
+public class LoginBack extends Message implements java.io.Serializable {
     /**
      * 0:成功
      */

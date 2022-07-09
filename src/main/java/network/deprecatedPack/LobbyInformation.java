@@ -1,4 +1,4 @@
-package network.pack;
+package network.deprecatedPack;
 
 import network.server.Lobby;
 
@@ -6,7 +6,7 @@ import network.server.Lobby;
  * @author YXH_XianYu
  * Created On 2022-07-06
  */
-public class LobbyInformation {
+public class LobbyInformation implements java.io.Serializable {
     /**
      * 大厅
      */

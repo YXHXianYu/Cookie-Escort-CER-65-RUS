@@ -1,4 +1,4 @@
-package network.pack;
+package network.deprecatedPack;
 
 /**
  * @author YXH_XianYu
@@ -6,7 +6,7 @@ package network.pack;
  *
  * 登陆包
  */
-public class Login {
+public class Login implements java.io.Serializable {
     /**
      * 登录类型
      */

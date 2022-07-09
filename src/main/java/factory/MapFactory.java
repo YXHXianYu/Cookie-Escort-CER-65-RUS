@@ -20,7 +20,6 @@ public class MapFactory {
      */
     public static void setMapIntoEntityManager(int type) {
         if(type == DEFAULT_MAP) {
-            System.out.println("I DID by MapFactory.");
 
             EntityManager.getInstance().restart();
 
@@ -34,13 +33,13 @@ public class MapFactory {
             EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.AIR_WALL, 0, -700, 450, 50));
             EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.AIR_WALL, 0, 700, 450, 50));
 
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, -100, -400));
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, 0, -400));
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, 100, -400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, -100, -400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, 0, -400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, 100, -400));
 
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, -100, 400));
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, 0, 400));
-            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.STONE, 100, 400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, -100, 400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, 0, 400));
+            EntityManager.getInstance().add(ObstacleFactory.getObstacle(ObstacleFactory.CONCRETE, 100, 400));
 
             character2.addRushTimes(100);
 
