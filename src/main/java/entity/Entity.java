@@ -17,13 +17,11 @@ import physics.Hitbox;
 public class Entity {
     /**
      * 实体编号（由EntityManager给出）
+     *
+     * 注意：EntityManager给出编号时是按照Add顺序给出。
+     * 所以多人游戏中，必须确保客户端和服务端实体添加顺序相同，否则ID将不同！
      */
     private int ID;
-
-    /**
-     * 实体Tag
-     */
-    private String tag;
 
     /**
      * 碰撞箱（记录位置、速度、碰撞箱）
@@ -51,6 +49,9 @@ public class Entity {
         this.hp = hp;
     }
 
+    /**
+     * 深拷贝构造方法
+     */
     public Entity(Entity another) {
         this(new Hitbox(another.getHitbox()), (another.getTexture() != null)?(new Texture(another.getTexture())):(null), another.getHp());
     }
@@ -69,22 +70,6 @@ public class Entity {
      */
     public int getID() {
         return ID;
-    }
-
-    /**
-     * 获取Tag
-     * @return Tag
-     */
-    public String getTag() {
-        return tag;
-    }
-
-    /**
-     * 设置Tag
-     * @param tag Tag
-     */
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     /**

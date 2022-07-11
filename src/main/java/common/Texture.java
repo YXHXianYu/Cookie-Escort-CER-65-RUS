@@ -10,6 +10,8 @@ import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * @author YXH_XianYu
@@ -23,7 +25,7 @@ import java.io.IOException;
  * 为了实现自适应分辨率，所以Texture缓存了当前scale下的贴图等信息，加速运算。
  * （如果不缓存的话，因为每次都要裁剪大量贴图，所以游戏会变得巨卡）
  */
-public class Texture {
+public class Texture implements java.io.Serializable {
     /**
      * 图像
      */
@@ -210,5 +212,16 @@ public class Texture {
      */
     public int getDy() {
         return scale < 0 ? dy : scaledDy;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        ImageIO.write(image, "png", out); // png is lossless
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        image = ImageIO.read(in);
+        scale = -1;
     }
 }

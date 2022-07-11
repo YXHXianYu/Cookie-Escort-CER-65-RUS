@@ -4,7 +4,7 @@ package network.pack;
  * @author YXH_XianYu
  * Created On 2022-07-06
  */
-public class VersionCheck {
+public class VersionCheck implements java.io.Serializable {
     /**
      * 大版本号
      */

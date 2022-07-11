@@ -39,6 +39,23 @@ public class Control implements Serializable {
     private int moveDirect;
 
     /**
+     * 空构造方法
+     */
+    public Control() {
+    }
+
+    /**
+     * 深拷贝
+     */
+    public Control(Control another) {
+        this.aimX = another.aimX;
+        this.aimY = another.aimY;
+        this.attack = another.attack;
+        this.rush = another.rush;
+        this.moveDirect = another.moveDirect;
+    }
+
+    /**
      * 获取瞄准位置x轴
      * @return 瞄准位置x轴
      */

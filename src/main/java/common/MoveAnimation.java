@@ -25,14 +25,16 @@ import org.w3c.dom.Text;
 public class MoveAnimation {
     /**
      * 记录当前动画播放的动画帧
-     * 取值范围 [0, 9]
+     * 取值范围 [0, 3]
      * cnt，即count
      */
     private int cnt;
 
+    private final int cntLength = 4;
+
     /**
      * 记录当前动画播放的游戏帧
-     * 取值范围 [0, 3]
+     * 取值范围 [0, cnt2Length - 1]
      *
      * 这种命名非常直观！
      * 如果你理解了动画播放逻辑就会认可这种命名方式的。
@@ -42,7 +44,7 @@ public class MoveAnimation {
     /**
      * 动画帧长度
      */
-    private int cnt2Length = (int)(GameManager.getInstance().getFps() * 1.0 / 15.0);
+    private final int cnt2Length = (int)(GameManager.getInstance().getFps() / 4.0);
 
     /**
      * 记录上一次角色移动的方向
@@ -59,7 +61,7 @@ public class MoveAnimation {
 
     /**
      * 记录动画
-     * 其中，数组大小为4*10
+     * 其中，数组大小为4*4
      */
     private Texture[][] textures;
 
@@ -82,7 +84,7 @@ public class MoveAnimation {
         if(lastDirect != direct || lastTimeStamp + 1 != timeStamp) // 重置动画
             cnt = cnt2 = 0;
         else { // 判断是否要播放下一帧动画
-            cnt = (cnt + (cnt2 == (cnt2Length - 1) ? 1 : 0)) % 10; // 看不懂的话把式子展开就好了。这样写简洁且优雅。
+            cnt = (cnt + (cnt2 == (cnt2Length - 1) ? 1 : 0)) % cntLength; // 看不懂的话把式子展开就好了。这样写简洁且优雅。
             cnt2 = (cnt2 + 1) % cnt2Length;
         }
         lastDirect = direct;

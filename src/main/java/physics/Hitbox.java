@@ -13,7 +13,7 @@ package physics;
  * 在每次更改速度时要确保同时修改vxf和vyf。
  * 在setVelocityTarget()中，vxf和vyf决定了vx和vy的数值
  */
-public class Hitbox {
+public class Hitbox implements java.io.Serializable {
     /**
      * x轴坐标（行为x轴，列为y轴）
      */
@@ -190,6 +190,16 @@ public class Hitbox {
     public void setVelocity(int vx, int vy) {
         this.vxf = this.vx = vx;
         this.vyf = this.vy = vy;
+    }
+
+    /**
+     * 设置碰撞箱大小
+     * @param lx x轴长度
+     * @param ly y轴长度
+     */
+    public void setHitboxLength(int lx, int ly) {
+        this.lx = lx;
+        this.ly = ly;
     }
 
     /**

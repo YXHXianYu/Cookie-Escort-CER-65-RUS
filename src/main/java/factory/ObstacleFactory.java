@@ -25,6 +25,11 @@ public class ObstacleFactory {
     public static final int STONE = 1;
 
     /**
+     * 障碍物编号：混凝土 - 2
+     */
+    public static final int CONCRETE = 2;
+
+    /**
      * 无限血量
      * 不会有人无限血量真的写了个if吧不会吧不会吧
      */
@@ -34,6 +39,11 @@ public class ObstacleFactory {
      * 石头血量
      */
     private static final int STONE_HP = 2;
+
+    /**
+     * 混凝土血量
+     */
+    private static final int CONCRETE_HP = 3;
 
     /**
      * 获取障碍物
@@ -47,10 +57,10 @@ public class ObstacleFactory {
     public static Obstacle getObstacle(int type, int x, int y, int lx, int ly) {
         try {
             if(type == AIR_WALL) {
-                if(lx == 0 && ly == 0) {
-                    System.out.println("空气墙碰撞箱参数异常!");
-                    return null;
-                }
+                //if(lx == 0 && ly == 0) {
+                //    System.out.println("空气墙碰撞箱参数异常!");
+                //    return null;
+                //}
                 return new Obstacle(
                         new Hitbox(x, y, lx, ly),
                         null,
@@ -61,6 +71,12 @@ public class ObstacleFactory {
                         new Hitbox(x, y, 50),
                         new Texture("./pics/stone.png", 100, 100, 50, 50),
                         STONE_HP
+                );
+            } else if(type == CONCRETE) {
+                return new Obstacle(
+                        new Hitbox(x, y, 50),
+                        new Texture("./pics/concrete.png", 200, 200, 120, 100),
+                        CONCRETE_HP
                 );
             }
         } catch (IOException e) {
@@ -73,5 +89,4 @@ public class ObstacleFactory {
     public static Obstacle getObstacle(int type, int x, int y) {
         return getObstacle(type, x, y, 0, 0);
     }
-
 }

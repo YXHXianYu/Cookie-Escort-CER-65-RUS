@@ -50,7 +50,7 @@ public class WeaponFactory {
     public static Weapon getWeapon(int type) {
         try {
             if(type == PISTOL) {
-                Bullet bullet = new Bullet(new Hitbox(0, 0, 0, 0, 5), new Texture("./pics/weapon/pistol_bullet.png", 10, 10, 5, 5), 1);
+                Bullet bullet = BulletFactory.getBullet(BulletFactory.PISTOL);
                 Texture texture = new Texture("./pics/weapon/pistol.png", 0, 0, 0, 0);
                 File soundEffect = new File("./sound/pistol.wav");
                 Weapon weapon = new Pistol(

@@ -1,5 +1,7 @@
 package network.pack;
 
+import common.Texture;
+
 /**
  * @author YXH_XianYu
  * Created On 2022-07-04
@@ -7,8 +9,11 @@ package network.pack;
  * 纹理包
  *
  * 用作服务端向客户端的通信
+ *
+ * 哎，为什么BufferedImage是不可序列化的。
+ * 好麻烦，只能手写序列化和反序列化方法了，好麻烦。
  */
-public class Textures {
+public class Textures implements java.io.Serializable {
     /**
      * 纹理包大小
      */
@@ -17,7 +22,7 @@ public class Textures {
     /**
      * 图像数组
      */
-    private common.Texture[] textures;
+    private Texture[] textures;
 
     /**
      * 实体所在x轴坐标

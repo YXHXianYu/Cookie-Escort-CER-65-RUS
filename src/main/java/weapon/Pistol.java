@@ -2,6 +2,8 @@ package weapon;
 
 import common.Texture;
 import entity.Bullet;
+import factory.BulletFactory;
+import factory.entityFactoryMessage.BulletFactoryMessage;
 import manager.EntityManager;
 import tool.MyTool;
 
@@ -18,7 +20,8 @@ public class Pistol extends Weapon {
     }
 
     @Override
-    public void attack(int senderID, int x, int y, int aimX, int aimY) {
+    public boolean attack(int senderID, int x, int y, int aimX, int aimY) {
+        if(!super.attack(senderID, x, y, aimX, aimY)) return false;
         Bullet newBullet = super.getNewBullet();
         int dx = aimX - x;
         int dy = aimY - y;
@@ -32,6 +35,7 @@ public class Pistol extends Weapon {
         newBullet.setDamage(super.getDamage());
         newBullet.getHitbox().setCoordinate(x, y);
         newBullet.setSenderID(senderID);
-        EntityManager.getInstance().add(newBullet);
+        EntityManager.getInstance().add(newBullet, new BulletFactoryMessage(BulletFactory.PISTOL));
+        return true;
     }
 }
