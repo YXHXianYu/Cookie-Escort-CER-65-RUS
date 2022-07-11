@@ -71,7 +71,7 @@ public class MapFactory {
             EntityManager.getInstance().restart();
 
             try {
-                RenderManager.getInstance().setBackground(new Texture("./pics/background_LAB3.png", 1080, 1920, 540, 960));
+                RenderManager.getInstance().setBackground(new Texture("pics/background_LAB3.png", 1080, 1920, 540, 960));
             } catch (IOException e) {e.printStackTrace();}
 
             // Players
@@ -120,13 +120,13 @@ public class MapFactory {
         } else if(type == CLIENT_CER65RUS_LAB3) {
             EntityManager.getInstance().restart();
             try {
-                RenderManager.getInstance().setBackground(new Texture("./pics/background_LAB3.png", 1080, 1920, 540, 960));
+                RenderManager.getInstance().setBackground(new Texture("pics/background_LAB3.png", 1080, 1920, 540, 960));
             } catch (IOException e) {e.printStackTrace();}
         } else if(type == CER65RUS_LAB3) {
             EntityManager.getInstance().restart();
 
             try {
-                RenderManager.getInstance().setBackground(new Texture("./pics/background_LAB3.png", 1080, 1920, 540, 960));
+                RenderManager.getInstance().setBackground(new Texture("pics/background_LAB3.png", 1080, 1920, 540, 960));
             } catch (IOException e) {e.printStackTrace();}
 
             // Players

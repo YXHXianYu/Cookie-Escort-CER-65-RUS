@@ -125,8 +125,8 @@ public class RenderManager extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         try {
-            background = new Texture("./pics/background.png", 1080, 1920, 540, 960);
-            linearDodgePicture = ImageIO.read(this.getClass().getClassLoader().getResource("./pics/bloom.png"));
+            background = new Texture("pics/background.png", 1080, 1920, 540, 960);
+            linearDodgePicture = ImageIO.read(this.getClass().getClassLoader().getResource("pics/bloom.png"));
         } catch (IOException e) {e.printStackTrace();}
 
         setVisible(true);

@@ -169,7 +169,7 @@ public class Character extends Entity {
      */
     public void attack() {
         if(weapon.attack(getID(), getHitbox().getX(), getHitbox().getY(), aimX, aimY))
-            MyTool.playSound(BulletFactory.getSoundEffect(weapon.getShootSoundEffectType()));
+            MyTool.playSound(BulletFactory.getSoundEffectPath(weapon.getShootSoundEffectType()));
     }
 
     /**

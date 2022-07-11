@@ -334,7 +334,7 @@ public class EntityManager {
             } else if(i instanceof BulletFactoryMessage) {
                 if(playSoundCnt <= 0) {
                     playSoundCnt = 5;
-                    MyTool.playSound(BulletFactory.getSoundEffect(i.getType()));
+                    MyTool.playSound(BulletFactory.getSoundEffectPath(i.getType()));
                 }
                 addWithoutMessage(i.getID(), BulletFactory.getBullet(i.getType()));
             } else {
