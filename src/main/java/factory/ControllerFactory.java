@@ -1,6 +1,5 @@
 package factory;
 
-import network.pack.Control;
 import entity.Controller;
 import entity.Character;
 import manager.RenderManager;
@@ -36,6 +35,10 @@ public class ControllerFactory {
      */
     public static final int TEST_CONTROLLER_2 = 3;
 
+    /**
+     * 控制器编号：服务器玩家控制器 - 4
+     */
+    public static final int SERVER_PLAYER_CONTROLLER = 4;
 
     /**
      * 获取控制器
@@ -47,7 +50,6 @@ public class ControllerFactory {
             return new Controller() {
                 private boolean firstPlay = true;
                 private boolean[] keyboard = new boolean[26];
-                private Control control = new Control();
                 @Override
                 public void control(Character character) {
                     if(firstPlay) {
@@ -63,28 +65,27 @@ public class ControllerFactory {
                     else if(!keyboard['W'-'A'] && keyboard['S'-'A']) x = 2;
                     else x = 1;
 
-                    control.setMoveDirect(MyTool.directTable[x][y]);
+                    getControl().setMoveDirect(MyTool.directTable[x][y]);
 
                     Point aimPoint = new Point(MouseInfo.getPointerInfo().getLocation());
                     SwingUtilities.convertPointFromScreen(aimPoint, RenderManager.getInstance());
                     // BE CAREFUL!! 这里进行了坐标系变换 + swap(x, y)
-                    control.setAimX(aimPoint.y - RenderManager.getInstance().getHeight() / 2);
-                    control.setAimY(aimPoint.x - RenderManager.getInstance().getWidth() / 2);
+                    getControl().setAimX((int) ((aimPoint.y - RenderManager.getInstance().getHeight() / 2) / RenderManager.getInstance().getScale()));
+                    getControl().setAimY((int) ((aimPoint.x - RenderManager.getInstance().getWidth() / 2) / RenderManager.getInstance().getScale()));
 
                     // play
-                    character.move(control.getMoveDirect());
-                    character.aim(control.getAimX(), control.getAimY());
-                    if(control.isAttack()) {
+                    if(character == null) return;
+                    character.move(getControl().getMoveDirect());
+                    character.aim(getControl().getAimX(), getControl().getAimY());
+                    if(getControl().isAttack()) {
                         character.attack();
                     }
-                    if(control.isRush()) {
-                        control.setRush(false);
+                    if(getControl().isRush()) {
                         character.rush();
-                        System.out.println("Rushed");
                     }
                 }
                 private void init() {
-                    System.out.println("init controller.");
+                    //System.out.println("init controller.");
                     RenderManager.getInstance().addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyPressed(KeyEvent e) {
@@ -105,15 +106,17 @@ public class ControllerFactory {
                         public void mousePressed(MouseEvent e) {
                             super.mousePressed(e);
                             if(e.getButton() == MouseEvent.BUTTON1) {
-                                control.setAttack(true);
+                                getControl().setAttack(true);
                             } else if(e.getButton() == MouseEvent.BUTTON3) {
-                                control.setRush(true);
+                                getControl().setRush(true);
                             }
                         }
                         public void mouseReleased(MouseEvent e) {
                             super.mouseReleased(e);
                             if(e.getButton() == MouseEvent.BUTTON1) {
-                                control.setAttack(false);
+                                getControl().setAttack(false);
+                            } else if(e.getButton() == MouseEvent.BUTTON3) {
+                                getControl().setRush(false);
                             }
                         }
                     });
@@ -148,6 +151,22 @@ public class ControllerFactory {
                             cnt = 0;
                     } else {
                         character.move(0);
+                    }
+                }
+            };
+        } else if(type == SERVER_PLAYER_CONTROLLER) {
+            return new Controller() {
+                @Override
+                public void control(Character character) {
+                    // play
+                    character.move(getControl().getMoveDirect());
+                    character.aim(getControl().getAimX(), getControl().getAimY());
+                    if(getControl().isAttack()) {
+                        character.attack();
+                    }
+                    if(getControl().isRush()) {
+                        getControl().setRush(false);
+                        character.rush();
                     }
                 }
             };

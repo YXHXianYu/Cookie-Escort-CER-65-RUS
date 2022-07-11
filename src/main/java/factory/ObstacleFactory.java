@@ -57,10 +57,10 @@ public class ObstacleFactory {
     public static Obstacle getObstacle(int type, int x, int y, int lx, int ly) {
         try {
             if(type == AIR_WALL) {
-                if(lx == 0 && ly == 0) {
-                    System.out.println("空气墙碰撞箱参数异常!");
-                    return null;
-                }
+                //if(lx == 0 && ly == 0) {
+                //    System.out.println("空气墙碰撞箱参数异常!");
+                //    return null;
+                //}
                 return new Obstacle(
                         new Hitbox(x, y, lx, ly),
                         null,
@@ -75,7 +75,7 @@ public class ObstacleFactory {
             } else if(type == CONCRETE) {
                 return new Obstacle(
                         new Hitbox(x, y, 50),
-                        new Texture("./pics/concrete.png", 200, 200, 132, 100),
+                        new Texture("./pics/concrete.png", 200, 200, 120, 100),
                         CONCRETE_HP
                 );
             }

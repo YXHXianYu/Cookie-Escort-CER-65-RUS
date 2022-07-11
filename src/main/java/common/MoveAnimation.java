@@ -44,7 +44,7 @@ public class MoveAnimation {
     /**
      * 动画帧长度
      */
-    private final int cnt2Length = (int)(GameManager.getInstance().getFps() * 2.0 / 15.0);
+    private final int cnt2Length = (int)(GameManager.getInstance().getFps() / 4.0);
 
     /**
      * 记录上一次角色移动的方向

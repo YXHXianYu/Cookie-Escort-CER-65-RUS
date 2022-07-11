@@ -62,6 +62,11 @@ public class GameManager {
     private final int delta_bias = 0;
 
     /**
+     * 运行平台是否是客户端
+     */
+    private boolean isClient;
+
+    /**
      * 构造方法
      */
     private GameManager() {
@@ -85,11 +90,16 @@ public class GameManager {
     }
 
     /**
-     * 初始化
+     * 平台是否是客户端
+     */
+    public boolean isClient() {
+        return isClient;
+    }
+
+    /**
+     * 初始化（客户端）
      */
     private void init() {
-        // render
-        RenderManager.getInstance().init();
         // audio
         try {
             AudioSystem.getClip();
@@ -99,11 +109,14 @@ public class GameManager {
     }
 
     /**
-     * 游戏主循环
+     * 游戏主循环（客户端）
      */
     public void play() {
 
+        // render
+        RenderManager.getInstance().init();
         init();
+        isClient = true;
 
         long lastTime = -1;
         long lastSecondTime = -1;
@@ -151,10 +164,13 @@ public class GameManager {
      */
     public void playServer() {
 
-        MapFactory.setMapIntoEntityManager(MapFactory.DEFAULT_MAP);
+        init();
+        isClient = false;
+        MapFactory.setMapIntoEntityManager(MapFactory.SERVER_CER65RUS_LAB3);
 
         long lastTime = -1;
         long lastSecondTime = -1;
+
         int cnt = 0;
         while(true) {
             if(lastTime == -1) {
@@ -166,8 +182,7 @@ public class GameManager {
 
             // 调用其他管理器
             EntityManager.getInstance().play();
-            Textures textures = RenderManager.getInstance().getCurrentTexturePack();
-            Server.getInstance().broadcastTextures(textures);
+            Server.getInstance().broadcastEntityMessages(EntityManager.getInstance().getEntityMessages());
 
             // 帧数限制
             long time = System.currentTimeMillis();

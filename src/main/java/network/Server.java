@@ -1,12 +1,9 @@
 package network;
 
-import factory.MapFactory;
-import manager.EntityManager;
+import entity.Controller;
+import factory.ControllerFactory;
 import manager.GameManager;
-import network.pack.Join;
-import network.pack.Textures;
-import network.pack.VersionCheck;
-import network.server.Player;
+import network.pack.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -23,7 +20,6 @@ import java.util.UUID;
  * 服务端
  *
  * 单例模式
- *
  */
 public class Server {
     /**
@@ -56,7 +52,7 @@ public class Server {
      * 玩家人数
      * 默认人数为2
      */
-    private int playerMax = 2;
+    private final int playerMax = 2;
 
     /**
      * 根据UUID定位客户端
@@ -67,6 +63,12 @@ public class Server {
      * 心跳线程
      */
     private HeartbeatThread heartbeatThread;
+
+    /**
+     * 控制器组
+     */
+    private ArrayList<Controller> controllers = new ArrayList<>();
+
 
     /**
      * 启动&运行
@@ -103,8 +105,9 @@ public class Server {
                 return;
             }
             System.out.println("发现新客户端");
-            clientHash.put(guid, new Client(guid, socket));
-            if(clientHash.size() >= 2) break;
+            controllers.add((Controller) ControllerFactory.getController(ControllerFactory.SERVER_PLAYER_CONTROLLER));
+            clientHash.put(guid, new Client(guid, socket, controllers.get(controllers.size() - 1)));
+            if(clientHash.size() >= playerMax) break;
         }
 
         /* 3. 游戏部分  */
@@ -114,12 +117,15 @@ public class Server {
         for(Client client: clientHash.values())
             client.sendMessage(SerializeConstants.START_GAME, null);
 
-        // TODO 调用GameManager.playServer(...)
         GameManager.getInstance().playServer();
-
-
     }
 
+    /**
+     * 广播纹理包
+     * @param texturesBroadcast 广播纹理
+     * @deprecated 通信方式更换，弃用纹理包
+     */
+    @Deprecated
     public void broadcastTextures(Textures texturesBroadcast) {
         for(Client client: clientHash.values()) {
             client.sendMessage(SerializeConstants.TEXTURE, texturesBroadcast);
@@ -127,9 +133,28 @@ public class Server {
         //System.out.println("Broadcast");
     }
 
+    /**
+     * 广播实体信息包
+     * @param entityMessages 实体信息包
+     */
+    public void broadcastEntityMessages(EntityMessages entityMessages) {
+        for(Client client: clientHash.values()) {
+            client.sendMessage(SerializeConstants.ENTITY_MESSAGES, entityMessages);
+        }
+        // System.out.println("Broadcast Entity Messages.");
+    }
+
+    /**
+     * 移除客户端
+     * @param guid 客户端GUID
+     */
     private void removeClient(String guid) {
         Client client = clientHash.get(guid);
         client.thread.interrupt();
+
+        // 删除控制器
+        controllers.remove(client.getController());
+
         if(clientHash.remove(guid, client))
             System.out.println("客户端已移除");
         else
@@ -138,11 +163,27 @@ public class Server {
     }
 
     /**
+     * 获取控制器
+     * @param index 编号
+     * @return 对应控制器
+     */
+    public Controller getController(int index) {
+        return controllers.get(index);
+    }
+
+    /**
+     * 获取最大玩家数量
+     */
+    public int getPlayerMax() {
+        return playerMax;
+    }
+
+    /**
      * 心跳线程
      * 向所有客户端广播心跳，并检测客户端心跳计数，若<=0则删去客户端
      */
     private class HeartbeatThread extends Thread {
-        private static final long HEARTBEAT_INTERVAL = 10000; // 10s
+        private static final long HEARTBEAT_INTERVAL = 3000; // 3s
         @Override
         public void run() {
             while(true) {
@@ -185,16 +226,6 @@ public class Server {
         private Socket socket;
 
         /**
-         * 输入流
-         */
-        private BufferedInputStream input;
-
-        /**
-         * 输出流
-         */
-        private BufferedOutputStream output;
-
-        /**
          * 序列化输入流
          */
         private ObjectInputStream inputObject;
@@ -220,20 +251,24 @@ public class Server {
         private long heartbeatCnt;
 
         /**
+         * 控制器
+         */
+        private Controller controller;
+
+        /**
          * 构造方法
          */
-        public Client(String guid, Socket socket) {
+        public Client(String guid, Socket socket, Controller controller) {
             this.guid = guid;
             this.socket = socket;
+            this.controller = controller;
             try {
-                output = new BufferedOutputStream(socket.getOutputStream());
-                input = new BufferedInputStream(socket.getInputStream());
+                outputObject = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+                outputObject.flush();
+                inputObject = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
                 // BE CAREFUL! ObjectOutputStream must be created before ObjectInputStream !
                 // And you must flush the stream.
                 // refer to https://stackoverflow.com/questions/14110986/new-objectinputstream-blocks
-                outputObject = new ObjectOutputStream(output);
-                outputObject.flush();
-                inputObject = new ObjectInputStream(input);
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
@@ -249,13 +284,15 @@ public class Server {
         private class ThreadInServer extends Thread {
             @Override
             public void run() {
-                synchronized (input) {
+                synchronized (inputObject) {
                     try {
                         // do <===
                         int type;
                         while(true) {
-                            type = input.read();
-                            System.out.println("Server received: " + type);
+                            type = (Integer) inputObject.readObject();
+
+                            if(type != SerializeConstants.CONTROL)
+                               System.out.println("Server received: " + type);
                             if(type == SerializeConstants.JOIN) {
                                 Join join = (Join) inputObject.readObject();
                                 name = join.getName();
@@ -264,6 +301,10 @@ public class Server {
                             } else if(type == SerializeConstants.CLIENT_EXIT || type == -1) {
                                 removeClient(guid);
                                 return;
+                            } else if(type == SerializeConstants.CONTROL) {
+                                Control control = (Control) inputObject.readObject();
+                                //System.out.println("Control: " + control.getAimX() + ", " + control.getAimY());
+                                controller.setControl(control);
                             }
                         }
                         // do ===>
@@ -283,10 +324,10 @@ public class Server {
          * @param object 信息值
          */
         public void sendMessage(int type, Object object) {
-            synchronized (output) {
+            synchronized (outputObject) {
                 try {
-                    output.write(type);
-                    output.flush();
+                    outputObject.writeObject(type);
+                    outputObject.flush();
                     if(object != null) {
                         outputObject.writeObject(object);
                         outputObject.flush();
@@ -295,6 +336,13 @@ public class Server {
                     //System.out.println("客户端失去连接");
                 }
             }
+        }
+
+        /**
+         * 获取控制器
+         */
+        public Controller getController() {
+            return controller;
         }
     }
 

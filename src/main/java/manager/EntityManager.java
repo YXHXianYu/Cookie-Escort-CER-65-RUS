@@ -2,11 +2,23 @@ package manager;
 
 import entity.*;
 import entity.Character;
+import factory.BulletFactory;
+import factory.CharacterFactory;
+import factory.ObstacleFactory;
+import factory.entityFactoryMessage.BulletFactoryMessage;
+import factory.entityFactoryMessage.CharacterFactoryMessage;
+import factory.entityFactoryMessage.FactoryMessage;
+import factory.entityFactoryMessage.ObstacleFactoryMessage;
 import network.pack.EntityMessage;
+import network.pack.EntityMessages;
 import physics.Hitbox;
+import tool.MyTool;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * @author YXH_XianYu
@@ -41,6 +53,11 @@ public class EntityManager {
     private ArrayList<Entity> entityList;
 
     /**
+     * 实体修改锁
+     */
+    private final Object entityListModifyLock = new Object();
+
+    /**
      * 实体编号计数器
      */
     private int entityCount;
@@ -49,7 +66,9 @@ public class EntityManager {
      * 初始化实体管理类
      */
     private EntityManager() {
-        entityList = new ArrayList<>();
+        synchronized (entityListModifyLock) {
+            entityList = new ArrayList<>();
+        }
         entityCount = 0;
     }
 
@@ -152,20 +171,28 @@ public class EntityManager {
             hitbox.setCoordinate(nextHitbox.getX(), nextHitbox.getY());
         }
 
-        // 第三阶段，将死亡(hp<=0)的实体从entityList中移除
-        ArrayList<Entity> newEntityList = new ArrayList<>();
+        // 第2.5阶段，记录实体信息
+        entityMessageHashMap = new HashMap<>();
         for(Entity e: entityList) {
-            if(!e.isExist()) { // 死亡
-                // TODO 播放死亡特效
-            } else {
-                newEntityList.add(e);
-            }
+            entityMessageHashMap.put(e.getID(), new EntityMessage(e.getID(), e.getHp(), e.getHitbox().getX(), e.getHitbox().getY(), e.getHitbox().getVx(), e.getHitbox().getVy(), e.getHitbox().getLx(), e.getHitbox().getLy()));
         }
-        entityList = newEntityList;
+
+        // 第三阶段，将死亡(hp<=0)的实体从entityList中移除
+        clearDeadEntity();
     }
 
-    public void playWithPack(EntityMessage entityMessage) {
-
+    private void clearDeadEntity() {
+        synchronized (entityListModifyLock) {
+            ArrayList<Entity> newEntityList = new ArrayList<>();
+            for(Entity e: entityList) {
+                if(!e.isExist()) { // 死亡
+                    // TODO 播放死亡特效
+                } else {
+                    newEntityList.add(e);
+                }
+            }
+            entityList = newEntityList;
+        }
     }
 
     /**
@@ -173,21 +200,44 @@ public class EntityManager {
      *  - 清空实体列表
      */
     public void restart() {
-        entityList = new ArrayList<>();
+        synchronized (entityListModifyLock) {
+            entityList = new ArrayList<>();
+        }
         entityCount = 0;
     }
 
     /**
      * 往游戏中添加一个新实体
      * @param entity 新实体
+     * @param factoryMessage 实体信息
      */
-    public void add(Entity entity) {
+    public void add(Entity entity, FactoryMessage factoryMessage) {
         if(entity == null) {
             System.out.println("添加了空实体");
             return;
         }
         entity.setID(++entityCount);
-        entityList.add(entity);
+        synchronized (entityListModifyLock) {
+            entityList.add(entity);
+        }
+
+        factoryMessage.setID(entityCount);
+        factoryMessages.add(factoryMessage);
+    }
+
+    /**
+     * 往游戏中添加一个新实体
+     * @param entity 新实体
+     */
+    public void addWithoutMessage(int ID, Entity entity) {
+        if(entity == null) {
+            System.out.println("添加了空实体");
+            return;
+        }
+        entity.setID(ID);
+        synchronized (entityListModifyLock) {
+            entityList.add(entity);
+        }
     }
 
     /**
@@ -214,7 +264,9 @@ public class EntityManager {
      * @param comparator 比较器
      */
     public void sort(Comparator<Entity> comparator) {
-        entityList.sort(comparator);
+        synchronized (entityListModifyLock) {
+            entityList.sort(comparator);
+        }
     }
 
     /**
@@ -251,5 +303,55 @@ public class EntityManager {
      */
     public ArrayList<Entity> getEntityListReference() {
         return entityList;
+    }
+
+    /* ----- ----- 网络部分 ----- ----- */
+
+    private ArrayList<FactoryMessage> factoryMessages = new ArrayList<>();
+
+    private HashMap<Integer, EntityMessage> entityMessageHashMap = new HashMap<>();
+
+    public EntityMessages getEntityMessages() {
+        EntityMessages entityMessages = new EntityMessages(entityMessageHashMap, factoryMessages);
+        factoryMessages = new ArrayList<>();
+        entityMessageHashMap = new HashMap<>();
+        return entityMessages;
+    }
+
+    private int playSoundCnt = 0;
+
+    public void useEntityMessages(EntityMessages entityMessagesPack) {
+        if(playSoundCnt > 0) playSoundCnt--;
+
+        ArrayList<FactoryMessage> factoryMessages = entityMessagesPack.getFactoryMessages();
+        HashMap<Integer, EntityMessage> entityMessageHashMap = entityMessagesPack.getEntityMessageHashMap();
+
+        for(FactoryMessage i: factoryMessages) {
+            if(i instanceof CharacterFactoryMessage) {
+                addWithoutMessage(i.getID(), CharacterFactory.getCharacter(i.getType(), 0, 0, 1000));
+            } else if(i instanceof ObstacleFactoryMessage) {
+                addWithoutMessage(i.getID(), ObstacleFactory.getObstacle(i.getType(), 0, 0));
+            } else if(i instanceof BulletFactoryMessage) {
+                if(playSoundCnt <= 0) {
+                    playSoundCnt = 2;
+                    MyTool.playSound(BulletFactory.getSoundEffect(i.getType()));
+                }
+                addWithoutMessage(i.getID(), BulletFactory.getBullet(i.getType()));
+            } else {
+                System.out.println("Factory Message Error.");
+            }
+        }
+
+        for(int i = 0; i < entityList.size(); i++) {
+            Entity entity = entityList.get(i);
+            EntityMessage entityMessage = entityMessageHashMap.get(entity.getID());
+            if(entityMessage == null) return;
+
+            entity.setHp(entityMessage.getHp());
+            entity.getHitbox().setCoordinate(entityMessage.getX(), entityMessage.getY());
+            entity.getHitbox().setVelocity(entityMessage.getVx(), entityMessage.getVy());
+            entity.getHitbox().setHitboxLength(entityMessage.getLx(), entityMessage.getLy());
+        }
+        clearDeadEntity();
     }
 }

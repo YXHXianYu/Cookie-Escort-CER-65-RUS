@@ -2,6 +2,7 @@ package entity;
 
 import common.MoveAnimation;
 import common.Texture;
+import network.ClientManager;
 import physics.Hitbox;
 import manager.GameManager;
 import tool.MyTool;
@@ -127,10 +128,6 @@ public class Character extends Entity {
      * 角色控制
      */
     public void play() {
-        // attackCnt
-        if(weapon != null && attackCnt < weapon.getInterval()) {
-            attackCnt++;
-        }
 
         // controller
         if(controller != null)
@@ -170,11 +167,8 @@ public class Character extends Entity {
      * 不需要持续控制。
      */
     public void attack() {
-        if(attackCnt < weapon.getInterval()) return;
-        attackCnt = 0;
-
-        weapon.attack(getID(), getHitbox().getX(), getHitbox().getY(), aimX, aimY);
-        MyTool.playSound(weapon.getShootSoundEffect());
+        if(weapon.attack(getID(), getHitbox().getX(), getHitbox().getY(), aimX, aimY))
+            MyTool.playSound(weapon.getShootSoundEffect());
     }
 
     /**
@@ -220,11 +214,9 @@ public class Character extends Entity {
 
         if(weapon != null) {
             BufferedImage image;
-            float dy = aimY - getHitbox().getY();
-            float dx = aimX - getHitbox().getX();
-            int index;
-            if(attackCnt < weapon.getInterval() - 1) index = 2;
-            else index = 0;
+            float dy = ((ClientManager.getInstance().getControl() == null) ? aimY : ClientManager.getInstance().getControl().getAimY()) - getHitbox().getY();
+            float dx = ((ClientManager.getInstance().getControl() == null) ? aimX : ClientManager.getInstance().getControl().getAimX()) - getHitbox().getX();
+            int index = 0;
             if(dx == 0) { // weapon in the front of character
                 if(dy <= 0)
                     return new Texture(MyTool.combineTwoBufferedImage(character.getImage(), weapon.getTexture(index).getImage()), 150, 120, 100, 60);
@@ -275,9 +267,11 @@ public class Character extends Entity {
     }
 
     public void rush() {
+        if(rushCnt > 0) return;
         if(this.rushTimes <= 0) return;
         this.rushTimes -= 1;
 
+        System.out.println("Rushed");
         rushCnt = rushCntLength;
         int dx = aimX - getHitbox().getX();
         int dy = aimY - getHitbox().getY();

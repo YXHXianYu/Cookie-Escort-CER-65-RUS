@@ -2,6 +2,7 @@ package weapon;
 
 import common.Texture;
 import entity.Bullet;
+import manager.GameManager;
 
 import java.io.File;
 
@@ -137,6 +138,12 @@ public abstract class Weapon {
     }
 
     /**
+     * 上一次射击的帧数
+     */
+    private long lastShootTimeStamp;
+
+
+    /**
      * 获取纹理
      * 0 Left
      * 1 Right
@@ -146,8 +153,8 @@ public abstract class Weapon {
      * @return 对应纹理
      */
     public Texture getTexture(int index) {
-        if(index < 0 || index > 3) return null;
-        return textures[index];
+        if(index < 0 || index > 1) return null;
+        return textures[index + (GameManager.getInstance().getTimeStamp() - lastShootTimeStamp < interval ? 2 : 0)];
     }
 
     /**
@@ -165,6 +172,11 @@ public abstract class Weapon {
      * @param y 攻击者y轴坐标
      * @param aimX 瞄准坐标x
      * @param aimY 瞄准坐标y
+     * @return true if shoot
      */
-    public abstract void attack(int senderID, int x, int y, int aimX, int aimY);
+    public boolean attack(int senderID, int x, int y, int aimX, int aimY) {
+        if(GameManager.getInstance().getTimeStamp() - lastShootTimeStamp < interval) return false;
+        lastShootTimeStamp = GameManager.getInstance().getTimeStamp();
+        return true;
+    }
 }

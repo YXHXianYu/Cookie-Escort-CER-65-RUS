@@ -99,7 +99,9 @@ public interface SerializeConstants {
     /**
      * 纹理
      * S -> C
+     * @deprecated 通信方式更换，弃用纹理包
      */
+    @Deprecated
     int TEXTURE = 11;
 
     /**
@@ -117,4 +119,9 @@ public interface SerializeConstants {
      * 启动游戏
      */
     int START_GAME = 14;
+
+    /**
+     * 实体信息包
+     */
+    int ENTITY_MESSAGES = 15;
 }

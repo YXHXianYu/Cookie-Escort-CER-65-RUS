@@ -2,8 +2,8 @@ package factory;
 
 import common.MoveAnimation;
 import common.Texture;
-import entity.Controller;
 import entity.Character;
+import entity.Controller;
 import manager.GameManager;
 import physics.Hitbox;
 
@@ -20,6 +20,11 @@ public class CharacterFactory {
      * 角色编号：测试角色 - 0
      */
     public static final int TEST_CHARACTER = 0;
+
+    /**
+     * 角色编号：Number10 - 1
+     */
+    public static final int NUMBER_10 = 1;
 
     /**
      * 获取角色
@@ -44,6 +49,23 @@ public class CharacterFactory {
                         new Hitbox(x, y, 0, 0, 50), texture_char1_rest, hp, hp, 720 / GameManager.getInstance().getFps(),
                         WeaponFactory.getWeapon(WeaponFactory.PISTOL),
                         new MoveAnimation(textures_char_moveAnimation)
+                );
+            } else if(type == NUMBER_10) {
+                Texture texture_rest = new Texture("./pics/Number10/rest.png", 150, 120, 100, 60);
+                Texture[][] textures_moveAnimation = new Texture[4][4];
+                Texture texture_tmp;
+                texture_tmp = new Texture("./pics/Number10/down.png", 300, 600, 0, 0);
+                for(int i = 0; i <= 3; i++) textures_moveAnimation[0][i] = texture_tmp.getCutTexture(0, i * 120, 150, 120, 100, 60);
+                texture_tmp = new Texture("./pics/Number10/up.png", 300, 600, 0, 0);
+                for(int i = 0; i <= 3; i++) textures_moveAnimation[1][i] = texture_tmp.getCutTexture(0, i * 120, 150, 120, 100, 60);
+                texture_tmp = new Texture("./pics/Number10/left.png", 300, 600, 0, 0);
+                for(int i = 0; i <= 3; i++) textures_moveAnimation[2][i] = texture_tmp.getCutTexture(0, i * 120, 150, 120, 100, 60);
+                texture_tmp = new Texture("./pics/Number10/right.png", 300, 600, 0, 0);
+                for(int i = 0; i <= 3; i++) textures_moveAnimation[3][i] = texture_tmp.getCutTexture(0, i * 120, 150, 120, 100, 60);
+                return new Character(
+                        new Hitbox(x, y, 0, 0, 50), texture_rest, hp, hp, 720 / GameManager.getInstance().getFps(),
+                        WeaponFactory.getWeapon(WeaponFactory.PISTOL),
+                        new MoveAnimation(textures_moveAnimation)
                 );
             }
         } catch (IOException e) {

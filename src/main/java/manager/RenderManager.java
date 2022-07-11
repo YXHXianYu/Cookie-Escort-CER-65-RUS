@@ -7,6 +7,7 @@ import factory.MapFactory;
 import network.ClientManager;
 import network.NetworkConstants;
 import network.SerializeConstants;
+import network.pack.Control;
 import network.pack.Join;
 import network.pack.Textures;
 
@@ -16,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -84,6 +86,11 @@ public class RenderManager extends JFrame {
      * 窗口高度
      */
     private int lastHeight;
+
+    /**
+     * 缩放
+     */
+    private float scale = 1.0f;
 
     /**
      * 菜单状态
@@ -181,10 +188,10 @@ public class RenderManager extends JFrame {
         } else if(menuState == RenderManagerConstants.SINGLE_PLAYER_GAME) {
             if(!isRendered) {
                 isRendered = true;
-                MapFactory.setMapIntoEntityManager(MapFactory.DEFAULT_MAP);
+                requestFocus();
+                MapFactory.setMapIntoEntityManager(MapFactory.CER65RUS_LAB3);
             }
 
-            requestFocus();
             EntityManager.getInstance().play();
             renderGame();
         } else if(menuState == RenderManagerConstants.LOGIN_MENU) {
@@ -365,32 +372,19 @@ public class RenderManager extends JFrame {
 
             repaint();
         } else if(menuState == RenderManagerConstants.MULTIPLAYER_GAME) {
-            requestFocus();
-            renderGame(ClientManager.getInstance().getTextures());
-        }
-    }
-
-
-    /**
-     * 获取当前纹理包（发送给客户端）
-     * @return 纹理包
-     */
-    public Textures getCurrentTexturePack() {
-        Textures texturesPack = new Textures(EntityManager.getInstance().getEntitySize());
-        for(int i = 0; i < EntityManager.getInstance().getEntitySize(); i++) {
-            Entity entity = EntityManager.getInstance().getEntity(i);
-            common.Texture texture;
-            if(entity instanceof Character) {
-                texture = ((Character)entity).getCurrentTexture();
-            } else {
-                texture = entity.getTexture();
+            if(!isRendered) {
+                isRendered = true;
+                requestFocus();
+                ClientManager.getInstance().initController();
+                MapFactory.setMapIntoEntityManager(MapFactory.CLIENT_CER65RUS_LAB3);
             }
-            if(texture == null) continue; // 空气墙等实体没有贴图，直接跳过渲染
-            texturesPack.setTexture(i, texture);
-            texturesPack.setEntityX(i, entity.getHitbox().getX());
-            texturesPack.setEntityY(i, entity.getHitbox().getY());
+
+            // control
+            Control control = ClientManager.getInstance().getControl();
+            ClientManager.getInstance().sendMessage(SerializeConstants.CONTROL, control);
+            // render
+            renderGame();
         }
-        return texturesPack;
     }
 
 
@@ -418,14 +412,21 @@ public class RenderManager extends JFrame {
             windowSizeChanged = false;
         }
 
-        float scale;
-        if(getWidth() <= 1152 || getHeight() <= 648) scale = 0.6f;
-        else if(getWidth() <= 1584 || getHeight() <= 864) scale = 0.8f;
-        else scale = 1f;
+        if(getWidth() <= 1152 || getHeight() <= 648) scale = 0.4f;
+        else if(getWidth() <= 1584 || getHeight() <= 864) scale = 0.6f;
+        else scale = 0.8f;
 
         if(background.setScale(scale) || windowSizeChanged || backgroundAfterCutImage == null)
             backgroundAfterCutImage = background.getCutImage(background.getLx() / 2 - getHeight() / 2, background.getLy() / 2 - getWidth() / 2, getHeight(), getWidth());
         g.drawImage(backgroundAfterCutImage, 0, 0, null);
+
+        // 渲染排序
+        EntityManager.getInstance().sort(new Comparator<Entity>() {
+            @Override
+            public int compare(Entity o1, Entity o2) {
+                return o1.getHitbox().getX() - o2.getHitbox().getX();
+            }
+        });
 
         for(int i = 0; i < EntityManager.getInstance().getEntitySize(); i++) {
             Entity entity = EntityManager.getInstance().getEntity(i);
@@ -443,14 +444,72 @@ public class RenderManager extends JFrame {
         //if(linearDodgePicture != null)
         //    offScreenImage = MyTool.linearDodge(((BufferedImage)offScreenImage), linearDodgePicture);
 
+        setBackground(new Color(38, 40, 74));
         graphics.drawImage(offScreenImage, 0, 0, null);
+    }
+
+    /**
+     * 获取菜单状态
+     */
+    public int getMenuState() {
+        return menuState;
+    }
+
+    /**
+     * 设置菜单状态 并 充值菜单
+     */
+    public void setMenuState(int menuState) {
+        this.menuState = menuState;
+        reset();
+    }
+
+    /**
+     * 获取缩放比例
+     */
+    public float getScale() {
+        return scale;
+    }
+
+    /**
+     * 设置背景
+     * @param background
+     */
+    public void setBackground(Texture background) {
+        this.background = background;
+        this.backgroundAfterCutImage = null;
+    }
+
+    /**
+     * 获取当前纹理包（发送给客户端）
+     * @return 纹理包
+     * @deprecated 通信方式更换，弃用纹理包
+     */
+    @Deprecated
+    public Textures getCurrentTexturePack() {
+        Textures texturesPack = new Textures(EntityManager.getInstance().getEntitySize());
+        for(int i = 0; i < EntityManager.getInstance().getEntitySize(); i++) {
+            Entity entity = EntityManager.getInstance().getEntity(i);
+            common.Texture texture;
+            if(entity instanceof Character) {
+                texture = ((Character)entity).getCurrentTexture();
+            } else {
+                texture = entity.getTexture();
+            }
+            if(texture == null) continue; // 空气墙等实体没有贴图，直接跳过渲染
+            texturesPack.setTexture(i, texture);
+            texturesPack.setEntityX(i, entity.getHitbox().getX());
+            texturesPack.setEntityY(i, entity.getHitbox().getY());
+        }
+        return texturesPack;
     }
 
     /**
      * 根据纹理包渲染游戏画面，并自动返回客户端接收到的ping值
      * @param texturesPack 纹理包
      * @return ping值
+     * @deprecated 通信方式更换，弃用纹理包
      */
+    @Deprecated
     public long renderGame(Textures texturesPack) {
         Graphics graphics = this.getGraphics();
 
@@ -486,21 +545,6 @@ public class RenderManager extends JFrame {
         graphics.drawImage(offScreenImage, 0, 0, null);
 
         return 0; // System.currentTimeMillis() - texturesPack.getSendTimeMillis();
-    }
-
-    /**
-     * 获取菜单状态
-     */
-    public int getMenuState() {
-        return menuState;
-    }
-
-    /**
-     * 设置菜单状态 并 充值菜单
-     */
-    public void setMenuState(int menuState) {
-        this.menuState = menuState;
-        reset();
     }
 
     /**
