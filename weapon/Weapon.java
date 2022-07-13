@@ -175,7 +175,7 @@ public abstract class Weapon {
      * @return true if shoot
      */
     public boolean attack(int senderID, int x, int y, int aimX, int aimY) {
-        if(GameManager.getInstance().getTimeStamp() - lastShootTimeStamp < interval) return false;
+        if(GameManager.getInstance().getTimeStamp() - lastShootTimeStamp <= interval) return false;
         lastShootTimeStamp = GameManager.getInstance().getTimeStamp();
         return true;
     }

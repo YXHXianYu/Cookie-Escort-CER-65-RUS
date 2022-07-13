@@ -9,6 +9,7 @@ import network.pack.*;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
@@ -90,6 +91,13 @@ public class ClientManager {
     private ClientManager() {
     }
 
+    /**
+     * 初始化客户端管理器
+     * @param IP 服务器IP
+     * @param port 服务器端口
+     * @param join Join信息包
+     * @return 连接状态
+     */
     public int init(String IP, int port, Join join) {
         try {
             socket = new Socket(IP, port);
@@ -147,7 +155,7 @@ public class ClientManager {
                         type = -1;
                         while(type == -1) {
                             Thread.sleep(1);
-                            type = ((Integer) inputObject.readObject());
+                            type = (Integer) inputObject.readObject();
                         }
 
                         if(type != 15)
@@ -155,6 +163,8 @@ public class ClientManager {
 
                         switch (type) {
                             case SerializeConstants.HEARTBEAT: {
+                                Ping ping = (Ping) inputObject.readObject();
+                                System.out.println("Ping = " + ping.getPing());
                                 synchronized (outputLock) {
                                     outputObject.writeObject(SerializeConstants.HEARTBEAT);
                                     outputObject.flush();
@@ -212,7 +222,8 @@ public class ClientManager {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                return;
+                System.out.println("检测到有客户端断开连接，服务器已关闭");
+                System.exit(-1);
             } catch (NullPointerException e) {
                 return;
             }

@@ -53,7 +53,7 @@ public class WeaponFactory {
                 Bullet bullet = BulletFactory.getBullet(BulletFactory.PISTOL);
                 Texture texture = new Texture("pics/weapon/pistol.png", 0, 0, 0, 0);
                 Weapon weapon = new Pistol(
-                        bullet, 1440 / GameManager.getInstance().getFps(), 1, 14400 / GameManager.getInstance().getFps(),
+                        bullet, 4320 / GameManager.getInstance().getFps(), 1, 14400 / GameManager.getInstance().getFps(),
                         texture.getCutTexture(0, 0, 150, 120, 100, 60),
                         texture.getCutTexture(0, 121, 150, 120, 100, 60),
                         texture.getCutTexture(0, 241, 150, 120, 100, 60),

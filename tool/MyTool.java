@@ -5,14 +5,17 @@ import manager.GameManager;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
+import java.util.HashMap;
 
 /**
  * @author YXH_XianYu
@@ -53,14 +56,15 @@ public class MyTool {
     }
 
     /**
-     * 输出音频
-     * @param file 音频文件
+     * 根据路径输出音频
+     * @param audioPath 音频路径
      */
-    public static void playSound(File file) {
+    public static void playSound(String audioPath) {
         try {
+            if(!GameManager.getInstance().isClient()) return;
             Clip clip = AudioSystem.getClip();
             // getAudioInputStream() also accepts a File or InputStream
-            AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResourceAsStream(audioPath));
             clip.open(ais);
             clip.start();
         } catch (Exception e) {
@@ -70,19 +74,41 @@ public class MyTool {
     }
 
     /**
-     * 根据路径输出音频
+     * 根据路径播放BGM（循环播放）
+     * 自动延迟2s播放
      * @param audioPath 音频路径
      */
-    public static void playSound(String audioPath) {
+    public static void playBGM(String audioPath) {
         try {
+            if(!GameManager.getInstance().isClient()) return;
             Clip clip = AudioSystem.getClip();
-            // getAudioInputStream() also accepts a File or InputStream
-            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResource(audioPath));
+            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResourceAsStream(audioPath));
             clip.open(ais);
-            clip.start();
+            playBGMThread thread = new MyTool.playBGMThread();
+            thread.start(clip);
         } catch (Exception e) {
             System.out.println("音频播放错误");
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 播放BGM线程（延迟5s）
+     */
+    private static class playBGMThread extends Thread {
+        Clip clip;
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
+        public void start(Clip clip) {
+            super.start();
+            this.clip = clip;
         }
     }
 

@@ -137,7 +137,9 @@ public class Character extends Entity {
         // move flush
         if(rushCnt <= 1) {
             float a;
-            if(rushCnt == 0) {
+            if(rushCnt <= 0) {
+                if(rushCnt >= -(3600 / GameManager.getInstance().getFps()))
+                    rushCnt--;
                 a = (float)(3600.0 / GameManager.getInstance().getFps() / GameManager.getInstance().getFps());
             } else {
                 rushCnt = 0;
@@ -267,8 +269,11 @@ public class Character extends Entity {
         this.rushTimes = rushTimes;
     }
 
+    /**
+     * 冲锋
+     */
     public void rush() {
-        if(rushCnt > 0) return;
+        if(rushCnt > -(3600 / GameManager.getInstance().getFps())) return;
         if(this.rushTimes <= 0) return;
         this.rushTimes -= 1;
 

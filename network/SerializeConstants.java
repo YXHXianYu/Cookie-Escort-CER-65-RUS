@@ -7,9 +7,9 @@ package network;
 public interface SerializeConstants {
     /**
      * 心跳
-     * C -> S
      *
-     * 本信息无其他值
+     * S -> C，附带ping值信息包
+     * C -> S，无附加信息包
      */
     int HEARTBEAT = 0;
 
@@ -19,6 +19,7 @@ public interface SerializeConstants {
      *
      * 服务端向客户端发送版本信息，如果版本不同，客户端自动退出
      * （通常是版本过低）
+     * // TODO 版本检查
      */
     int VERSION_CHECK = 1;
 
