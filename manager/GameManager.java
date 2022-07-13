@@ -116,7 +116,6 @@ public class GameManager {
         // render
         RenderManager.getInstance().init();
         init();
-        isClient = true;
 
         long lastTime = -1;
         long lastSecondTime = -1;
@@ -164,8 +163,6 @@ public class GameManager {
      */
     public void playServer() {
 
-        init();
-        isClient = false;
         MapFactory.setMapIntoEntityManager(MapFactory.SERVER_CER65RUS_LAB3);
 
         long lastTime = -1;
@@ -209,5 +206,13 @@ public class GameManager {
                 cnt = 0;
             }
         }
+    }
+
+    /**
+     * 设置平台属性
+     * @param isClient 是否是客户端
+     */
+    public void setIsClient(boolean isClient) {
+        this.isClient = isClient;
     }
 }

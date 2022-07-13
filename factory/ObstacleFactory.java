@@ -69,13 +69,13 @@ public class ObstacleFactory {
             } else if(type == STONE) {
                 return new Obstacle(
                         new Hitbox(x, y, 50),
-                        new Texture("./pics/stone.png", 100, 100, 50, 50),
+                        new Texture("pics/stone.png", 100, 100, 50, 50),
                         STONE_HP
                 );
             } else if(type == CONCRETE) {
                 return new Obstacle(
                         new Hitbox(x, y, 50),
-                        new Texture("./pics/concrete.png", 200, 200, 120, 100),
+                        new Texture("pics/concrete.png", 200, 200, 120, 100),
                         CONCRETE_HP
                 );
             }

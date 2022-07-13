@@ -30,7 +30,7 @@ public class BulletFactory {
     public static Bullet getBullet(int type) {
         try {
             if(type == PISTOL) {
-                return new Bullet(new Hitbox(0, 0, 0, 0, 5), new Texture("./pics/weapon/pistol_bullet.png", 10, 10, 5, 5), 1);
+                return new Bullet(new Hitbox(0, 0, 0, 0, 5), new Texture("pics/weapon/pistol_bullet.png", 10, 10, 5, 5), 1);
             }
         } catch (IOException e) {
             System.out.println("武器生成时异常!");
@@ -42,11 +42,9 @@ public class BulletFactory {
     /**
      * 获取音效
      */
-    public static File getSoundEffect(int type) {
+    public static String getSoundEffectPath(int type) {
         if(type == PISTOL) {
-            try {
-                return new File(BulletFactory.class.getClassLoader().getResource("./sound/pistol.wav").toURI());
-            } catch (URISyntaxException e) {e.printStackTrace(); return null;}
+            return "sound/pistol.wav";
         } else {
             return null;
         }

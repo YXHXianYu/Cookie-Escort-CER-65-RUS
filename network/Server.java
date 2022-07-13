@@ -1,5 +1,6 @@
 package network;
 
+import database.SQLiteJDBC;
 import entity.Controller;
 import factory.ControllerFactory;
 import manager.GameManager;
@@ -10,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -87,23 +89,27 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException exception) {
-            System.out.println("未知错误(可能是端口被占用)");
+            System.out.println("Unknown exception (perhaps port has been occupied)");
             return;
         } catch (IllegalArgumentException exception) {
-            System.out.println("端口错误");
+            System.out.println("Port syntax exception.");
             return;
         }
         // Initialize
+        // - 初始化客户端HashMap
         clientHash = new HashMap<>();
-
+        // - 初始化心跳线程
         heartbeatThread = new HeartbeatThread();
         heartbeatThread.start();
-        System.out.println("启动心跳线程");
+        System.out.println("Heartbeat Thread started.");
+        // - 初始化数据库
+        SQLiteJDBC.getInstance();
+        // - 初始化完毕
+        System.out.println("Server have initialized.");
 
-        System.out.println("服务器启动完毕");
         /* 2. 等待部分  */
         while(true) {
-            System.out.println("等待客户端连接...(" + clientHash.size() + "/" + playerMax + ")");
+            System.out.println("Waiting clients ...(" + clientHash.size() + "/" + playerMax + ")");
             String guid = UUID.randomUUID().toString().replaceAll("-", "");
             Socket socket;
             try {
@@ -112,14 +118,22 @@ public class Server {
                 exception.printStackTrace();
                 return;
             }
-            System.out.println("发现新客户端");
+
+            System.out.println("found a new client.");
+
+            // 数据库
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            int index = SQLiteJDBC.getInstance().insertData("UNKNOWN", socket.getInetAddress().getHostAddress(), formatter.format(new java.util.Date(System.currentTimeMillis())));
+
+            // 对象
             controllers.add((Controller) ControllerFactory.getController(ControllerFactory.SERVER_PLAYER_CONTROLLER));
-            clientHash.put(guid, new Client(guid, socket, controllers.get(controllers.size() - 1)));
+            clientHash.put(guid, new Client(guid, socket, controllers.get(controllers.size() - 1), index));
+
             if(clientHash.size() >= playerMax) break;
         }
 
         /* 3. 游戏部分  */
-        System.out.println("启动游戏中...");
+        System.out.println("Game starting...");
 
         // 广播游戏开始
         for(Client client: clientHash.values())
@@ -165,10 +179,10 @@ public class Server {
         controllers.remove(client.getController());
 
         if(clientHash.remove(guid, client))
-            System.out.println("客户端已移除");
+            System.out.println("A Client has been removed");
         else
-            System.out.println("客户端移除失败！");
-        System.out.println("当前客户端个数 (" + clientHash.size() + "/" + playerMax + ")");
+            System.out.println("Client removing failed！");
+        System.out.println("The number of clients: (" + clientHash.size() + "/" + playerMax + ")");
     }
 
     /**
@@ -206,19 +220,23 @@ public class Server {
                 for(Client client: clientHash.values()) {
                     if(client.heartbeatCnt <= 0 || client.socket.isClosed()) {
                         if(client.socket.isClosed())
-                            System.out.println("该客户端已关闭");
+                            System.out.println("This client have been closed");
                         removeClients.add(client.guid);
                     } else {
                         client.heartbeatCnt--;
-                        client.sendMessage(SerializeConstants.HEARTBEAT, null);
+                        // 成功发送心跳信息
+                        client.sendMessage(SerializeConstants.HEARTBEAT, new Ping(client.getPing()));
+                        client.setHeartbeatSentTime(System.currentTimeMillis());
                     }
                 }
                 for(String i: removeClients)
                     removeClient(i);
 
                 if(state == SERVER_PLAYING) if(clientHash.size() < playerMax) {
-                    System.out.println("Restarting...");
-                    restartApplication();
+                    System.out.println("Server ending...");
+                    System.exit(0);
+                    // System.out.println("Restarting...");
+                    // restartApplication();
                 }
             }
         }
@@ -232,12 +250,12 @@ public class Server {
         /**
          * GUID
          */
-        private String guid;
+        private final String guid;
 
         /**
          * Socket
          */
-        private Socket socket;
+        private final Socket socket;
 
         /**
          * 序列化输入流
@@ -257,25 +275,42 @@ public class Server {
         /**
          * 服务端的监听输入线程
          */
-        private ThreadInServer thread;
+        private final ThreadInServer thread;
 
         /**
          * 心跳响应计数器
          */
-        private long heartbeatCnt;
+        private int heartbeatCnt;
+
+        /**
+         * 上次的心跳发送时间
+         * （辅助ping值计算）
+         */
+        private long heartbeatSentTime;
+
+        /**
+         * ping值
+         */
+        private long ping;
 
         /**
          * 控制器
          */
-        private Controller controller;
+        private final Controller controller;
+
+        /**
+         * 数据库中编号
+         */
+        private final int SQLiteIndex;
 
         /**
          * 构造方法
          */
-        public Client(String guid, Socket socket, Controller controller) {
+        public Client(String guid, Socket socket, Controller controller, int SQLiteIndex) {
             this.guid = guid;
             this.socket = socket;
             this.controller = controller;
+            this.SQLiteIndex = SQLiteIndex;
             try {
                 outputObject = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 outputObject.flush();
@@ -310,8 +345,11 @@ public class Server {
                             if(type == SerializeConstants.JOIN) {
                                 Join join = (Join) inputObject.readObject();
                                 name = join.getName();
+                                // 数据库更新
+                                SQLiteJDBC.getInstance().updateNameByID(SQLiteIndex, name);
                             } else if(type == SerializeConstants.HEARTBEAT) {
                                 heartbeatCnt = 2;
+                                ping = System.currentTimeMillis() - heartbeatSentTime;
                             } else if(type == SerializeConstants.CLIENT_EXIT || type == -1) {
                                 removeClient(guid);
                                 return;
@@ -358,6 +396,20 @@ public class Server {
         public Controller getController() {
             return controller;
         }
+
+        /**
+         * 设置心跳发送时间
+         */
+        public void setHeartbeatSentTime(long heartbeatSentTime) {
+            this.heartbeatSentTime = heartbeatSentTime;
+        }
+
+        /**
+         * 获取Ping
+         */
+        public long getPing() {
+            return ping;
+        }
     }
 
     /**
@@ -377,6 +429,7 @@ public class Server {
             }
         }
 
+        GameManager.getInstance().setIsClient(false);
         // 启动服务器
         Server.getInstance().launch();
     }
@@ -387,23 +440,18 @@ public class Server {
      */
     public void restartApplication() {
         try {
-            final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-            final File currentJar = new File(Server.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-
-            /* is it a jar file? */
-            if(!currentJar.getName().endsWith(".jar"))
-                return;
-
-            /* Build command: java -jar application.jar */
+            /* Build command: java -jar CER65RUS_Server.jar */
             final ArrayList<String> command = new ArrayList<String>();
-            command.add(javaBin);
+            command.add("java");
             command.add("-jar");
-            command.add(currentJar.getPath());
+            command.add("CER65RUS_Server.jar");
 
             final ProcessBuilder builder = new ProcessBuilder(command);
             builder.start();
+
+            System.out.println("restarted.");
             System.exit(0);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

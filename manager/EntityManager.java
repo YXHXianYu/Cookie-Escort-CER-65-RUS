@@ -5,20 +5,15 @@ import entity.Character;
 import factory.BulletFactory;
 import factory.CharacterFactory;
 import factory.ObstacleFactory;
-import factory.entityFactoryMessage.BulletFactoryMessage;
-import factory.entityFactoryMessage.CharacterFactoryMessage;
-import factory.entityFactoryMessage.FactoryMessage;
-import factory.entityFactoryMessage.ObstacleFactoryMessage;
+import factory.entityFactoryMessage.*;
 import network.pack.EntityMessage;
 import network.pack.EntityMessages;
 import physics.Hitbox;
 import tool.MyTool;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * @author YXH_XianYu
@@ -96,6 +91,8 @@ public class EntityManager {
                 ((Character)entityList.get(i)).play();
         }
 
+        boolean havePlayedHitSound = false;
+
         // 第二阶段，以移动为核心的判断（移动、碰撞、伤害）
         for(int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
@@ -161,9 +158,19 @@ public class EntityManager {
                 if(entity instanceof Bullet) {
                     anotherEntity.subHp(((Bullet)entity).getDamage());
                     entity.subHp(1);
+                    if(anotherEntity instanceof Character && !havePlayedHitSound) {
+                        havePlayedHitSound = true;
+                        MyTool.playSound("sound/hit.wav");
+                        factoryMessages.add(new HitSoundEffectMessage(0));
+                    }
                 } else if(anotherEntity instanceof Bullet) {
                     entity.subHp(((Bullet)anotherEntity).getDamage());
                     anotherEntity.subHp(1);
+                    if(entity instanceof Character && !havePlayedHitSound) {
+                        havePlayedHitSound = true;
+                        MyTool.playSound("sound/hit.wav");
+                        factoryMessages.add(new HitSoundEffectMessage(0));
+                    }
                 }
             }
 
@@ -187,6 +194,8 @@ public class EntityManager {
             for(Entity e: entityList) {
                 if(!e.isExist()) { // 死亡
                     // TODO 播放死亡特效
+                    if(e instanceof Character)
+                        MyTool.playSound("sound/kill.wav");
                 } else {
                     newEntityList.add(e);
                 }
@@ -334,9 +343,11 @@ public class EntityManager {
             } else if(i instanceof BulletFactoryMessage) {
                 if(playSoundCnt <= 0) {
                     playSoundCnt = 5;
-                    MyTool.playSound(BulletFactory.getSoundEffect(i.getType()));
+                    MyTool.playSound(BulletFactory.getSoundEffectPath(i.getType()));
                 }
                 addWithoutMessage(i.getID(), BulletFactory.getBullet(i.getType()));
+            } else if(i instanceof HitSoundEffectMessage) {
+                MyTool.playSound("sound/hit.wav");
             } else {
                 System.out.println("Factory Message Error.");
             }
