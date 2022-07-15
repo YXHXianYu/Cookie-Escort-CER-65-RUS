@@ -3,6 +3,7 @@ package manager;
 import common.Texture;
 import entity.Entity;
 import entity.Character;
+import entity.Foreground;
 import factory.MapFactory;
 import network.ClientManager;
 import network.NetworkConstants;
@@ -10,6 +11,7 @@ import network.SerializeConstants;
 import network.pack.Control;
 import network.pack.Join;
 import network.pack.Textures;
+import tool.MyTool;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -123,6 +125,7 @@ public class RenderManager extends JFrame {
         setLayout(null);
         setBounds(300, 0, WINDOW_Y, WINDOW_X);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         try {
             background = new Texture("pics/background.png", 1080, 1920, 540, 960);
@@ -134,6 +137,9 @@ public class RenderManager extends JFrame {
 
     private void reset() {
         isRendered = false;
+        try {
+            setContentPane(new MainMenuBackground(ImageIO.read(this.getClass().getClassLoader().getResource("pics/UI/UI_background2.png"))));
+        } catch (IOException e) {e.printStackTrace();}
         getContentPane().removeAll();//or remove(JComponent)
         revalidate();
         repaint();
@@ -149,8 +155,12 @@ public class RenderManager extends JFrame {
             if(isRendered) return;
             isRendered = true;
 
-            JButton single = new JButton("单人竞技场");
-            single.setBounds(200, 200, 200, 50);
+
+            JButton single = new JButton();
+            single.setIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_single1.png")));
+            single.setPressedIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_single2.png")));
+            single.setBounds(100, 500, 613, 101);
+            MyTool.setButtonTransparent(single, false);
             single.setFocusable(false);
             single.addActionListener(new ActionListener() {
                 @Override
@@ -159,8 +169,11 @@ public class RenderManager extends JFrame {
                 }
             });
 
-            JButton multi = new JButton("多人竞技场");
-            multi.setBounds(500, 200, 200, 50);
+            JButton multi = new JButton();
+            multi.setIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_multiplayer1.png")));
+            multi.setPressedIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_multiplayer2.png")));
+            MyTool.setButtonTransparent(multi, false);
+            multi.setBounds(100, 623, 613, 101);
             multi.setFocusable(false);
             multi.addActionListener(new ActionListener() {
                 @Override
@@ -180,9 +193,22 @@ public class RenderManager extends JFrame {
                 }
             });
 
+            JButton info = new JButton("Info");
+            info.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("pics/UI/UI_info_1.png")));
+            info.setPressedIcon(new ImageIcon(this.getClass().getClassLoader().getResource("pics/UI/UI_info_2.png")));
+            MyTool.setButtonTransparent(info, false);
+            info.setBounds(1400, 670, 100, 100);
+            multi.setFocusable(false);
+            // TODO "关于按键"的制作
+
+            try {
+                setContentPane(new MainMenuBackground(ImageIO.read(this.getClass().getClassLoader().getResource("pics/UI/UI_background.png"))));
+            } catch (IOException e) {e.printStackTrace();}
+
             add(single);
             add(multi);
-            add(exit);
+            //add(exit);
+            add(info);
 
             repaint();
         } else if(menuState == RenderManagerConstants.SINGLE_PLAYER_GAME) {
@@ -190,6 +216,7 @@ public class RenderManager extends JFrame {
                 isRendered = true;
                 requestFocus();
                 MapFactory.setMapIntoEntityManager(MapFactory.CER65RUS_LAB3);
+                setResizable(true);
             }
 
             EntityManager.getInstance().play();
@@ -238,9 +265,9 @@ public class RenderManager extends JFrame {
             repaint();
         } else if(menuState == RenderManagerConstants.LOBBY_MENU) {
             if(isRendered) {
-                // TODO 发送请求
-                // TODO 接收大厅信息
-                // TODO 显示
+                // TO.DO 发送请求
+                // TO.DO 接收大厅信息
+                // TO.DO 显示
             }
             isRendered = true;
 
@@ -265,21 +292,54 @@ public class RenderManager extends JFrame {
             isRendered = true;
 
             // instantiate
-            JButton backButton = new JButton("Back");
-            JButton joinButton = new JButton("Join");
-            JLabel ipLabel = new JLabel("IP: ");
-            JLabel portLabel = new JLabel("Port: ");
-            JLabel nameLabel = new JLabel("Name: ");
+            JButton backButton = new JButton();
+
+            JButton joinButton = new JButton();
+
             JTextField nameTextField = new JTextField();
+
             JTextField ipTextField = new JTextField();
-            JTextField portTextField = new JTextField();
-            JLabel tips = new JLabel();
+
+
+            // position
+
+            try {
+                Font font = Font.createFont(Font.TRUETYPE_FONT, RenderManager.class.getClassLoader().getResourceAsStream("font/SOURCEHANSANSCN-HEAVY-2.OTF")).deriveFont(48f);
+                nameTextField.setFont(font);
+                nameTextField.setForeground(Color.WHITE);
+                nameTextField.setHorizontalAlignment(JTextField.CENTER);
+                ipTextField.setFont(font);
+                ipTextField.setForeground(Color.WHITE);
+                ipTextField.setHorizontalAlignment(JTextField.CENTER);
+            } catch (FontFormatException | IOException e) {
+                e.printStackTrace();
+            }
+            nameTextField.setBounds(520, 320, 550, 80);
+            nameTextField.setBorder(null);
+            MyTool.setTextFieldTransparent(nameTextField, false);
+
+            ipTextField.setBounds(520, 520, 550, 80);
+            ipTextField.setBorder(null);
+            MyTool.setTextFieldTransparent(ipTextField, false);
+
+
+            backButton.setBounds(100, 675, 90, 90);
+            backButton.setIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_back1.png")));
+            backButton.setPressedIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_back2.png")));
+            MyTool.setButtonTransparent(backButton, false);
+
+            joinButton.setBounds(1400, 675, 90, 90);
+            joinButton.setIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_next1.png")));
+            joinButton.setPressedIcon(new ImageIcon(RenderManager.class.getClassLoader().getResource("pics/UI/UI_next2.png")));
+            MyTool.setButtonTransparent(joinButton, false);
+
+
+            //info.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("pics/UI/UI_info_1.png")));
+            //info.setPressedIcon(new ImageIcon(this.getClass().getClassLoader().getResource("pics/UI/UI_info_2.png")));
 
             // function
-            // MyTool.setButtonTransparent(registerButton, true);
             nameTextField.setText("Guest");
             ipTextField.setText("127.0.0.1");
-            portTextField.setText("11451");
 
             backButton.addActionListener(new ActionListener() {
                 @Override
@@ -300,27 +360,24 @@ public class RenderManager extends JFrame {
 
                     String ip = ipTextField.getText();
 
-                    int port;
+                    int port = 11451;
+                    /*
                     try {
                         port = Integer.parseInt(portTextField.getText());
                     } catch (NumberFormatException exception) {
-                        tips.setText("端口格式错误：端口不是一个整数");
                         System.out.println("端口格式错误：端口不是一个整数");
                         return;
                     }
                     if(port < 1024 || port > 65535) {
-                        tips.setText("端口格式错误：端口数值不合法");
                         System.out.println("端口格式错误：端口数值不合法");
                         return;
-                    }
+                    }*/
 
                     int ret = ClientManager.getInstance().init(ip, port, join);
                     if(ret == NetworkConstants.INIT_UNKNOWN_HOST_EXCEPTION) {
-                        tips.setText("连接错误：未知地址");
                         System.out.println("连接错误：未知地址");
                         return;
                     } else if(ret == NetworkConstants.INIT_IO_EXCEPTION) {
-                        tips.setText("连接错误：未知原因");
                         System.out.println("连接错误：未知原因");
                         return;
                     }
@@ -332,31 +389,18 @@ public class RenderManager extends JFrame {
                 }
             });
 
-            // position
-
-            nameLabel.setBounds(200, 100, 100, 50);
-            nameTextField.setBounds(300, 100, 300, 50);
-
-            ipLabel.setBounds(200, 200, 100, 50);
-            ipTextField.setBounds(300, 200, 300, 50);
-
-            portLabel.setBounds(200, 300, 100, 50);
-            portTextField.setBounds(300, 300, 300, 50);
-
-            tips.setBounds(250, 400, 200, 50);
-
-            backButton.setBounds(100, 500, 200, 50);
-            joinButton.setBounds(700, 500, 200, 50);
-
             // add
-            add(nameLabel);
+
+            try {
+                setContentPane(new MainMenuBackground(ImageIO.read(this.getClass().getClassLoader().getResource("pics/UI/UI_background3.png"))));
+            } catch (IOException e) {e.printStackTrace();}
+
             add(nameTextField);
-            add(ipLabel);
             add(ipTextField);
-            add(portLabel);
-            add(portTextField);
             add(backButton);
             add(joinButton);
+
+            /* port */
 
             // repaint
             repaint();
@@ -377,6 +421,7 @@ public class RenderManager extends JFrame {
                 requestFocus();
                 ClientManager.getInstance().initController();
                 MapFactory.setMapIntoEntityManager(MapFactory.CLIENT_CER65RUS_LAB3);
+                setResizable(true);
             }
 
             // control
@@ -414,6 +459,7 @@ public class RenderManager extends JFrame {
 
         if(getWidth() <= 1152 || getHeight() <= 648) scale = 0.4f;
         else if(getWidth() <= 1584 || getHeight() <= 864) scale = 0.6f;
+        else if(getWidth() == 1936 || getHeight() == 1056) scale = 1.0f;
         else scale = 0.8f;
 
         if(background.setScale(scale) || windowSizeChanged || backgroundAfterCutImage == null)
@@ -424,7 +470,14 @@ public class RenderManager extends JFrame {
         EntityManager.getInstance().sort(new Comparator<Entity>() {
             @Override
             public int compare(Entity o1, Entity o2) {
-                return o1.getHitbox().getX() - o2.getHitbox().getX();
+                if(o1 instanceof Foreground && o2 instanceof Foreground)
+                    return o1.getHitbox().getX() - o2.getHitbox().getX();
+                else if(o1 instanceof Foreground)
+                    return 1;
+                else if(o2 instanceof Foreground)
+                    return -1;
+                else
+                    return o1.getHitbox().getX() - o2.getHitbox().getX();
             }
         });
 
@@ -546,6 +599,23 @@ public class RenderManager extends JFrame {
 
         return 0; // System.currentTimeMillis() - texturesPack.getSendTimeMillis();
     }
+
+    /**
+     * 主菜单背景，辅助子类
+     */
+    private class MainMenuBackground extends JComponent {
+        private Image image;
+        public MainMenuBackground(Image image) {
+            this.image = image;
+            setBounds(0, 0, WINDOW_Y, WINDOW_X);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.drawImage(image, 0, 0, this);
+        }
+    }
+
 
     /**
      * ----- 已废弃 -----

@@ -64,7 +64,7 @@ public class MyTool {
             if(!GameManager.getInstance().isClient()) return;
             Clip clip = AudioSystem.getClip();
             // getAudioInputStream() also accepts a File or InputStream
-            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResourceAsStream(audioPath));
+            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResource(audioPath));
             clip.open(ais);
             clip.start();
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class MyTool {
         try {
             if(!GameManager.getInstance().isClient()) return;
             Clip clip = AudioSystem.getClip();
-            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResourceAsStream(audioPath));
+            AudioInputStream ais = AudioSystem.getAudioInputStream(MyTool.class.getClassLoader().getResource(audioPath));
             clip.open(ais);
             playBGMThread thread = new MyTool.playBGMThread();
             thread.start(clip);
@@ -112,8 +112,6 @@ public class MyTool {
         }
     }
 
-
-
     /**
      * 将一个按钮变为全透明
      * @param button 按钮
@@ -123,6 +121,14 @@ public class MyTool {
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setFocusPainted(focusPainted);
+    }
+
+    /**
+     * 将一个按钮变为全透明
+     * @param textField 按钮
+     */
+    public static void setTextFieldTransparent(JTextField textField, boolean focusPainted) {
+        textField.setOpaque(false);
     }
 
     /**
@@ -156,6 +162,10 @@ public class MyTool {
         AffineTransformOp scaleOp =
                 new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
         return scaleOp.filter(before, after);
+    }
+
+    public static Image resize(Image imgOld, int width, int height) {
+        return imgOld.getScaledInstance(width, height, Image.SCALE_DEFAULT);
     }
 
     /**

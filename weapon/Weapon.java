@@ -58,19 +58,14 @@ public abstract class Weapon {
      * @param bullet 子弹
      * @param velocity 速度
      * @param damage 伤害
-     * @param t0 左向纹理
-     * @param t1 右向纹理
-     * @param t2 左向换弹中纹理
-     * @param t3 右向换弹中纹理
+     * @param textures 纹理
      */
-    public Weapon(Bullet bullet, int velocity, int damage, int interval, Texture t0, Texture t1, Texture t2, Texture t3, int shootSoundEffectType) {
+    public Weapon(Bullet bullet, int velocity, int damage, int interval, Texture[] textures, int shootSoundEffectType) {
         this.bullet = bullet;
         this.velocity = velocity;
         this.damage = damage;
         this.interval = interval;
-        this.textures = new Texture[] {
-                t0, t1, t2, t3,
-        };
+        this.textures = textures;
         this.shootSoundEffectType = shootSoundEffectType;
     }
 
@@ -78,7 +73,7 @@ public abstract class Weapon {
      * deep copy constructor
      */
     public Weapon(Weapon another) {
-        this(new Bullet(another.bullet), another.velocity, another.damage, another.interval, another.textures[0], another.textures[1], another.textures[2], another.textures[3], another.shootSoundEffectType);
+        this(new Bullet(another.bullet), another.velocity, another.damage, another.interval, another.textures, another.shootSoundEffectType);
     }
 
     /**

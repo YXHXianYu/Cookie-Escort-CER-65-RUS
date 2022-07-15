@@ -312,9 +312,9 @@ public class Server {
             this.controller = controller;
             this.SQLiteIndex = SQLiteIndex;
             try {
-                outputObject = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+                outputObject = new ObjectOutputStream(socket.getOutputStream());
                 outputObject.flush();
-                inputObject = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+                inputObject = new ObjectInputStream(socket.getInputStream());
                 // BE CAREFUL! ObjectOutputStream must be created before ObjectInputStream !
                 // And you must flush the stream.
                 // refer to https://stackoverflow.com/questions/14110986/new-objectinputstream-blocks

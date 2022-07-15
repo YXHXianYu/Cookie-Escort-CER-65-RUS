@@ -25,16 +25,19 @@ import org.w3c.dom.Text;
 public class MoveAnimation {
     /**
      * 记录当前动画播放的动画帧
-     * 取值范围 [0, 3]
+     * 取值范围 [0, cntLength)
      * cnt，即count
      */
     private int cnt;
 
-    private final int cntLength = 4;
+    /**
+     * 动画帧数
+     */
+    private final int cntLength = 12;
 
     /**
      * 记录当前动画播放的游戏帧
-     * 取值范围 [0, cnt2Length - 1]
+     * 取值范围 [0, cnt2Length)
      *
      * 这种命名非常直观！
      * 如果你理解了动画播放逻辑就会认可这种命名方式的。
@@ -44,7 +47,7 @@ public class MoveAnimation {
     /**
      * 动画帧长度
      */
-    private final int cnt2Length = (int)(GameManager.getInstance().getFps() / 4.0);
+    private final int cnt2Length = (int)(GameManager.getInstance().getFps() / cntLength);
 
     /**
      * 记录上一次角色移动的方向
@@ -61,7 +64,7 @@ public class MoveAnimation {
 
     /**
      * 记录动画
-     * 其中，数组大小为4*4
+     * 其中，数组大小为4*12
      */
     private Texture[][] textures;
 

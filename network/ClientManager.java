@@ -104,9 +104,9 @@ public class ClientManager {
             // BE CAREFUL! ObjectOutputStream must be created before ObjectInputStream !
             // And you must flush the stream.
             // refer to https://stackoverflow.com/questions/14110986/new-objectinputstream-blocks
-            outputObject = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+            outputObject = new ObjectOutputStream(socket.getOutputStream());
             outputObject.flush();
-            inputObject = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+            inputObject = new ObjectInputStream(socket.getInputStream());
         } catch (UnknownHostException exception) {
             return NetworkConstants.INIT_UNKNOWN_HOST_EXCEPTION;
         } catch (IOException e) {

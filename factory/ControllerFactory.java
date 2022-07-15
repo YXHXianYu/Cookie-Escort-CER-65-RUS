@@ -129,7 +129,7 @@ public class ControllerFactory {
                 @Override
                 public void control(Character character) {
                     cnt2++;
-                    if(cnt2 >= 40) {
+                    if(cnt2 >= 120) {
                         cnt2 = 0;
                         cnt1 = (cnt1 + 1) % 8;
                         if(cnt1 % 2 == 1)
