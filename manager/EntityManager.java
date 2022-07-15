@@ -85,19 +85,23 @@ public class EntityManager {
             return;
         }
 
-        // 第一阶段，实体刷新（控制器）
+        // 第一阶段，实体刷新（控制器）+ 前景hp刷新
         for(int i = 0; i < entityList.size(); i++) {
             if(entityList.get(i) instanceof Character)
                 ((Character)entityList.get(i)).play();
+            if(entityList.get(i) instanceof Foreground)
+                entityList.get(i).subHp(1);
         }
 
         boolean havePlayedHitSound = false;
+        boolean havePlayedHitWallSound = false;
 
         // 第二阶段，以移动为核心的判断（移动、碰撞、伤害）
         for(int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
 
             //if(!entity.isExist()) continue; // 实体不存在（死亡）
+            if(entity instanceof Foreground) continue; // 前景不会移动
             if(entity instanceof Obstacle) continue; // 障碍物不会移动
             if(entity.getHitbox().getVx() == 0 && entity.getHitbox().getVy() == 0) continue; // 静止实体不会移动
 
@@ -158,22 +162,24 @@ public class EntityManager {
                 if(entity instanceof Bullet) {
                     anotherEntity.subHp(((Bullet)entity).getDamage());
                     entity.subHp(1);
-                    if(anotherEntity instanceof Character && !havePlayedHitSound) {
+                    if((anotherEntity instanceof Character) && !havePlayedHitSound) {
                         havePlayedHitSound = true;
                         MyTool.playSound("sound/hit.wav");
                         factoryMessages.add(new HitSoundEffectMessage(0));
+                    } else if(anotherEntity instanceof Obstacle) {
+                        MyTool.playSound("sound/blt_imp_masonry_far_01.wav");
+                        factoryMessages.add(new HitSoundEffectMessage(1));
                     }
                 } else if(anotherEntity instanceof Bullet) {
                     entity.subHp(((Bullet)anotherEntity).getDamage());
                     anotherEntity.subHp(1);
-                    if(entity instanceof Character && !havePlayedHitSound) {
+                    if((entity instanceof Character) && !havePlayedHitSound) {
                         havePlayedHitSound = true;
                         MyTool.playSound("sound/hit.wav");
                         factoryMessages.add(new HitSoundEffectMessage(0));
                     }
                 }
             }
-
             // 更新第i个实体的位置
             hitbox.setCoordinate(nextHitbox.getX(), nextHitbox.getY());
         }
@@ -347,7 +353,12 @@ public class EntityManager {
                 }
                 addWithoutMessage(i.getID(), BulletFactory.getBullet(i.getType()));
             } else if(i instanceof HitSoundEffectMessage) {
-                MyTool.playSound("sound/hit.wav");
+                if(i.getType() == 0)
+                    MyTool.playSound("sound/hit.wav");
+                else if(i.getType() == 1)
+                    MyTool.playSound("sound/blt_imp_masonry_far_01.wav");
+                else if(i.getType() == 2)
+                    MyTool.playSound("sound/blt_imp_metal_thick_far_03.wav");
             } else {
                 System.out.println("Factory Message Error.");
             }

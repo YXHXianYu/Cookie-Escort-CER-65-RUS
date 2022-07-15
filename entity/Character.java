@@ -238,7 +238,7 @@ public class Character extends Entity {
                 if(dx > 0) { // weapon in the front of character
                     return new Texture(MyTool.combineTwoBufferedImage(character.getImage(), image), 150, 120, 100, 60);
                 } else if(dx < 0) { // weapon in the back of character
-                    return new Texture(MyTool.combineTwoBufferedImage(image, character.getImage()), 150, 120, 100, 60);
+                    return new Texture(MyTool.combineTwoBufferedImage(character.getImage(), image), 150, 120, 100, 60);
                 }
             }
         }

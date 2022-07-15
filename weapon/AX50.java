@@ -7,26 +7,23 @@ import factory.entityFactoryMessage.BulletFactoryMessage;
 import manager.EntityManager;
 import tool.MyTool;
 
-import java.io.File;
-
 /**
  * @author YXH_XianYu
- * Created On 2022-07-03
+ * Created On 2022-07-14
  *
- * 手枪类
+ * 狙击枪类
  */
-public class Pistol extends Weapon {
-
+public class AX50 extends Weapon {
     /**
      * 构造方法
      * @param bullet 子弹
      * @param velocity 速度
      * @param damage 伤害
-     * @param interval 冷却
+     * @param interval 射击CD
      * @param textures 纹理
-     * @param shootSoundEffectType 射击音效编号
+     * @param shootSoundEffectType 音效
      */
-    public Pistol(Bullet bullet, int velocity, int damage, int interval, Texture[] textures, int shootSoundEffectType) {
+    public AX50(Bullet bullet, int velocity, int damage, int interval, Texture[] textures, int shootSoundEffectType) {
         super(bullet, velocity, damage, interval, textures, shootSoundEffectType);
     }
 

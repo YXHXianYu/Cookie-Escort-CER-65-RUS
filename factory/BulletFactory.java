@@ -23,6 +23,11 @@ public class BulletFactory {
     public static final int PISTOL = 0;
 
     /**
+     * 子弹编号：狙击枪 - 4
+     */
+    public static final int AX50 = 4;
+
+    /**
      * 获取子弹对象
      * @param type 类型
      * @return 子弹
@@ -31,6 +36,8 @@ public class BulletFactory {
         try {
             if(type == PISTOL) {
                 return new Bullet(new Hitbox(0, 0, 0, 0, 5), new Texture("pics/weapon/pistol_bullet.png", 10, 10, 5, 5), 1);
+            } else if(type == AX50) {
+                return new Bullet(new Hitbox(0, 0, 0, 0, 5), new Texture("pics/weapon/pistol_bullet.png", 10, 10, 5, 5), 3);
             }
         } catch (IOException e) {
             System.out.println("武器生成时异常!");
@@ -45,6 +52,8 @@ public class BulletFactory {
     public static String getSoundEffectPath(int type) {
         if(type == PISTOL) {
             return "sound/pistol.wav";
+        } else if(type == AX50) {
+            return "sound/sniperRifle.wav";
         } else {
             return null;
         }
